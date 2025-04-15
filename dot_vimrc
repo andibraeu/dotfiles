@@ -1,0 +1,395 @@
+" Modern vim configuration
+" Basics
+set encoding=utf-8
+set fileencoding=utf-8
+set termencoding=utf-8
+scriptencoding utf-8
+set mouse=a
+set number
+set wildmenu
+set wildmode=list:longest,full
+let mapleader = ","
+
+" Tabs and spaces
+set expandtab
+set smarttab
+set tabstop=2
+set shiftwidth=2
+set softtabstop=2
+
+" Search
+set hlsearch
+set incsearch
+set ignorecase
+set smartcase
+
+" Text display
+set wrap
+set linebreak
+set formatoptions=croqlj
+set foldcolumn=1
+
+" System integration
+if has('mac')
+  set clipboard+=unnamed
+endif
+
+" Persistence
+set undodir=~/.vim/undo
+set undofile
+set undolevels=1000
+set undoreload=10000
+
+" Install vim-plug if not found
+if empty(glob('~/.vim/autoload/plug.vim'))
+  silent !curl -fLo ~/.vim/autoload/plug.vim --create-dirs
+    \ https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+  autocmd VimEnter * PlugInstall --sync | source $MYVIMRC
+endif
+
+" Plugins
+call plug#begin('~/.vim/plugged')
+
+" Essentials
+Plug 'tpope/vim-repeat'
+Plug 'tpope/vim-surround'
+Plug 'tpope/vim-commentary'
+Plug 'tpope/vim-endwise'
+Plug 'tpope/vim-abolish'
+Plug 'tpope/vim-speeddating'
+
+" File navigation
+Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
+Plug 'junegunn/fzf.vim'
+
+" Auto completion and syntax
+Plug 'jiangmiao/auto-pairs'
+Plug 'dense-analysis/ale'
+Plug 'neoclide/coc.nvim', {'branch': 'release'}
+Plug 'michaeljsmith/vim-indent-object'
+Plug 'kana/vim-textobj-user'
+
+" Git integration
+Plug 'tpope/vim-fugitive'
+Plug 'mhinz/vim-signify'
+
+" Language support
+Plug 'sheerun/vim-polyglot'
+Plug 'tpope/vim-rails'
+Plug 'mattn/emmet-vim'
+
+" Utilities
+Plug 'godlygeek/tabular'
+Plug 'mattn/gist-vim'
+Plug 'mattn/webapi-vim'
+Plug 'mbbill/undotree'
+Plug 'junegunn/vim-easy-align'
+Plug 'christoomey/vim-tmux-navigator'
+Plug 'tpope/vim-characterize'
+
+" Search
+Plug 'mileszs/ack.vim'
+Plug 'jremmen/vim-ripgrep'
+Plug 'nelstrom/vim-visual-star-search'
+
+" Appearance
+Plug 'vim-airline/vim-airline'
+Plug 'vim-airline/vim-airline-themes'
+Plug 'altercation/vim-colors-solarized'
+Plug 'morhetz/gruvbox'
+Plug 'ryanoasis/vim-devicons', { 'on': [] }
+
+" Kotlin und Spring Boot Support - nur bei vorhandenen Tools
+if executable('kotlinc') && executable('java')
+  " Kotlin Syntax-Unterstützung
+  Plug 'udalov/kotlin-vim'
+  
+  " Java-Completion
+  if executable('javac')
+    Plug 'artur-shaik/vim-javacomplete2'
+  endif
+  
+  " Snippets für Spring Boot
+  Plug 'SirVer/ultisnips'
+  Plug 'honza/vim-snippets'
+endif
+
+call plug#end()
+
+" Use ripgrep if available
+if executable('rg')
+  set grepprg=rg\ --vimgrep\ --no-heading
+  set grepformat=%f:%l:%c:%m
+  let g:ackprg = 'rg --vimgrep --no-heading'
+  let g:ctrlp_user_command = 'rg %s --files --hidden --color=never --glob ""'
+elseif executable('ag')
+  set grepprg=ag\ --nogroup\ --nocolor
+  let g:ackprg = 'ag --vimgrep'
+  let g:ctrlp_user_command = 'ag %s -l --nocolor -g ""'
+endif
+
+" Fix cursor in TMUX
+if exists('$TMUX')
+  let &t_SI = "\<Esc>Ptmux;\<Esc>\<Esc>]50;CursorShape=1\x7\<Esc>\\"
+  let &t_EI = "\<Esc>Ptmux;\<Esc>\<Esc>]50;CursorShape=0\x7\<Esc>\\"
+else
+  let &t_SI = "\<Esc>]50;CursorShape=1\x7"
+  let &t_EI = "\<Esc>]50;CursorShape=0\x7"
+endif
+
+" ALE configuration
+let g:ale_sign_error = '●'
+let g:ale_sign_warning = '■'
+let g:ale_linters_explicit = 1
+let g:ale_lint_on_text_changed = 'never'
+let g:ale_lint_on_enter = 0
+
+" Kotlin und Java-Konfiguration
+if executable('kotlinc') || executable('javac')
+  " Linter-Konfiguration
+  let g:ale_linters = {}
+  
+  " Kotlin-Konfiguration
+  if executable('kotlinc')
+    " Nur ktlint für Kotlin verwenden
+    if executable('ktlint')
+      let g:ale_linters.kotlin = ['ktlint']
+    endif
+    
+    " CoC-Kotlin-Unterstützung
+    if isdirectory(expand('~/.config/coc/extensions/node_modules/coc-kotlin'))
+      let g:coc_global_extensions = get(g:, 'coc_global_extensions', [])
+      let g:coc_global_extensions += ['coc-kotlin']
+    endif
+    
+    " Kotlin-spezifische Einstellungen
+    augroup kotlin_settings
+      autocmd!
+      autocmd FileType kotlin setlocal omnifunc=javacomplete#Complete
+      autocmd FileType kotlin nmap <leader>jd <Plug>(coc-definition)
+      autocmd FileType kotlin nmap <leader>jr <Plug>(coc-references)
+      autocmd FileType kotlin nmap <leader>ji <Plug>(coc-implementation)
+      " Compiler nur setzen wenn silent funktioniert
+      " silent! autocmd FileType kotlin compiler kotlinc
+    augroup END
+  endif
+  
+  " Java-Konfiguration
+  if executable('javac')
+    let g:ale_linters.java = ['javac']
+    if executable('checkstyle')
+      let g:ale_linters.java += ['checkstyle']
+    endif
+    
+    " CoC-Java-Unterstützung
+    if isdirectory(expand('~/.config/coc/extensions/node_modules/coc-java'))
+      let g:coc_global_extensions = get(g:, 'coc_global_extensions', [])
+      let g:coc_global_extensions += ['coc-java']
+    endif
+    
+    " Java-spezifische Einstellungen
+    augroup java_settings
+      autocmd!
+      autocmd FileType java setlocal omnifunc=javacomplete#Complete
+      autocmd FileType java nmap <leader>jd <Plug>(coc-definition)
+      autocmd FileType java nmap <leader>jr <Plug>(coc-references)
+      autocmd FileType java nmap <leader>ji <Plug>(coc-implementation)
+      
+      " Spring Boot-spezifische Mappings
+      if exists('g:coc_global_extensions') && index(g:coc_global_extensions, 'coc-java') >= 0
+        autocmd FileType java nmap <leader>sb :CocCommand java.action.organizeImports<CR>
+      endif
+    augroup END
+  endif
+endif
+
+" Airline settings
+set laststatus=2
+set noshowmode
+let g:airline_powerline_fonts = 1
+let g:airline_theme = 'powerlineish'
+let g:airline#extensions#branch#enabled = 1
+let g:airline#extensions#ale#enabled = 1
+let g:airline#extensions#tabline#enabled = 1
+let g:airline#extensions#tabline#buffer_nr_show = 1
+let g:airline_section_y = '%{strftime("%H:%M")}'
+
+" Erkenne Umgebung und passe Airline an
+if !exists('g:airline_symbols')
+  let g:airline_symbols = {}
+endif
+
+" Versuche Powerline-Fonts zu nutzen, aber fallback auf ASCII
+let g:airline_powerline_fonts = 0
+let g:airline_theme = 'powerlineish'
+
+" Teste ob wir in einer GUI oder Terminal mit Powerline-Fonts sind
+if has('gui_running') || $TERM =~ 'xterm-256color' || $TERM =~ 'screen-256color'
+  silent! let g:airline_powerline_fonts = 1
+  
+  " Statusline ohne komplexe Zeichen bei SSH-Verbindungen
+  if !empty($SSH_CLIENT) || !empty($SSH_TTY)
+    let g:airline_symbols_ascii = 1
+  endif
+endif
+
+" Common commands
+command! -nargs=0 Format :call CocAction('format')
+command! Wsudo :w !sudo tee %
+command! WQ wq
+command! Wq wq
+command! W w
+command! Q q
+command! Qa qa
+command! QA qa
+command! Wqa wqa
+command! WQa wqa
+command! Vimrc :e ~/.vimrc
+command! -range=% RemoveTrailingWhitespace <line1>,<line2>s/\(\s\| \)\+$// | norm! ``
+command! DiffWithSaved call s:DiffWithSaved()
+command! FormatJson %!python -m json.tool
+
+" Diff with saved version
+function! s:DiffWithSaved()
+  let filetype=&ft
+  diffthis
+  vnew | r # | normal! 1Gdd
+  diffthis
+  exe "setlocal bt=nofile bh=wipe nobl noswf ro ft=" . filetype
+endfunction
+
+" Toggle wrap
+function! ToggleWrap()
+  if &list
+    set nolist wrap lbr
+  else
+    set list nowrap nolbr
+  endif
+endfunction
+
+" Key mappings
+nnoremap <Leader>rt :RemoveTrailingWhitespace<CR>
+vnoremap <Leader>rt :RemoveTrailingWhitespace<CR>
+nnoremap <expr> gp '`[' . strpart(getregtype(), 0, 1) . '`]'
+nmap <silent> <leader>w :call ToggleWrap()<CR>
+nmap <leader>a :Rg<space>
+nmap <Leader>f :Files<CR>
+nmap <Leader>b :Buffers<CR>
+nmap <Leader>u :UndotreeToggle<CR>
+nmap <Leader>g :Gstatus<CR>
+
+" Insert mode maps
+imap jj <esc>o
+imap JJ <esc>O
+
+" Autojump function (if installed)
+if executable('autojump')
+  function! s:Autojump(...)
+    let path = system('autojump '.a:000[-1])
+    exe 'cd '.escape(path, ' ')
+    pwd
+  endfunction
+
+  function! s:AutojumpCompletion(A,L,P)
+    let completions = []
+    for completion in split(system('autojump --complete '.a:A), "\n")
+      call add(completions, substitute(completion, '^.*__\d__', '', ''))
+    endfor
+    return completions
+  endfunction
+
+  command! -complete=customlist,s:AutojumpCompletion -nargs=* J call s:Autojump(<f-args>)
+  map <leader>j :J<space>
+endif
+
+" Appearance
+set listchars=tab:▸\ ,eol:¬,trail:·,extends:>,precedes:<
+set fillchars+=vert:│
+set background=dark
+silent! colorscheme gruvbox
+
+" GUI settings
+if has('gui_running')
+  set guifont=MesloLGS\ NF:h12
+  set guioptions=egmrt
+endif
+
+" Auto commands
+augroup vimrc
+  autocmd!
+  autocmd BufWritePost $MYVIMRC source % | AirlineRefresh
+  autocmd BufEnter * setlocal formatoptions+=j
+augroup END
+
+" Use omnicomplete when no specific completion is available
+if has("autocmd") && exists("+omnifunc")
+  autocmd Filetype *
+        \ if &omnifunc == "" |
+        \  setlocal omnifunc=syntaxcomplete#Complete |
+        \ endif
+endif
+
+" Schnellerer Start
+let g:loaded_matchparen = 1  " Deaktiviere eingebautes matchparen für Geschwindigkeit
+set synmaxcol=200            " Vermeide Syntax-Highlighting bei sehr langen Zeilen
+set lazyredraw               " Bildschirm nicht während Makro-Ausführung neu zeichnen
+
+" Vim 8+ Terminal-Support
+if v:version >= 800
+  nnoremap <leader>t :terminal<CR>
+endif
+
+" Verbessere built-in Dateibrowser (statt NERDTree)
+let g:netrw_banner = 0
+let g:netrw_liststyle = 3
+let g:netrw_browse_split = 4
+let g:netrw_altv = 1
+let g:netrw_winsize = 25
+nmap <leader>e :Lexplore<CR>
+
+" Server-Erkennung
+let g:is_server = hostname() =~ 'server\|prod\|dev'
+
+" Lade nur essentielle Plugins auf Servern
+if g:is_server
+  " Minimale Plugin-Auswahl für Server
+  let g:airline_symbols_ascii = 1  " Nur ASCII für Server
+  let g:airline_theme = 'minimalist'  " Einfacheres Theme
+else
+  " Alle Plugins für lokale Entwicklung
+endif
+
+" Robustere Plugin-Ladung
+for plugin in ['fugitive', 'surround', 'commentary']
+  silent! execute 'runtime plugin/' . plugin . '.vim'
+endfor
+
+" Fallbacks bei fehlenden Features
+if !has('patch-8.1.0360')
+  set updatetime=1000  " Ältere Vim-Versionen: längere updatetime
+else
+  set updatetime=300   " Neuere Vim-Versionen: kürzere updatetime
+endif
+
+" Verbesserte eingebaute Suche
+set path+=**               " Rekursive Dateisuche
+set wildignore+=*/node_modules/*,*/dist/*,*/.git/*  " Directories ignorieren
+
+" Neuere Vim-Features
+set autoread                 " Datei neu laden, wenn außerhalb von Vim geändert
+set backspace=indent,eol,start  " Backspace verhält sich erwartungsgemäß
+set hidden                   " Buffer im Hintergrund halten, nicht schließen
+set history=1000             " Mehr Command-History
+
+" Reduzierte Konfiguration für devicons
+let g:webdevicons_enable = 1
+let g:webdevicons_enable_nerdtree = 0
+let g:webdevicons_enable_airline_tabline = 0
+let g:webdevicons_enable_airline_statusline = 1
+let g:webdevicons_conceal_nerdtree_brackets = 0
+
+" Verzögertes Laden von devicons
+augroup load_devicons
+  autocmd!
+  autocmd InsertEnter * call plug#load('vim-devicons') | autocmd! load_devicons
+augroup END

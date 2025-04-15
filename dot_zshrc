@@ -7,15 +7,14 @@ fi
 
 # If you come from bash you might have to change your $PATH.
 # Path to your oh-my-zsh installation.
-export ZSH=/home/abraeu/.oh-my-zsh
+export ZSH=~/.oh-my-zsh
 
 # Set name of the theme to load. Optionally, if you set this to "random"
 # it'll load a random theme each time that oh-my-zsh is loaded.
 # See https://github.com/robbyrussell/oh-my-zsh/wiki/Themes
-#ZSH_THEME="agnoster"
 ZSH_THEME="powerlevel10k/powerlevel10k"
+
 export HOSTNAME=$(hostname)
-#export MAVEN_OPTS="-Xmx3000m"
 export VISUAL="vim" 
 # Uncomment the following line to use case-sensitive completion.
 # CASE_SENSITIVE="true"
@@ -59,15 +58,13 @@ export VISUAL="vim"
 # Custom plugins may be added to ~/.oh-my-zsh/custom/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
-plugins=(git z zsh-syntax-highlighting zsh-autosuggestions archlinux mvn aws sudo lol pass chucknorris battery emoji-clock)
+plugins=(git z zsh-syntax-highlighting zsh-autosuggestions archlinux mvn aws sudo pass battery emoji-clock)
 
 source $ZSH/oh-my-zsh.sh
 
 # User configuration
 
 [[ $TMUX != "" ]] && export TERM="screen-256color"
-
-# export MANPATH="/usr/local/man:$MANPATH"
 
 # You may need to manually set your language environment
 # export LANG=en_US.UTF-8
@@ -78,9 +75,6 @@ source $ZSH/oh-my-zsh.sh
 # else
 #   export EDITOR='mvim'
 # fi
-
-# Compilation flags
-# export ARCHFLAGS="-arch x86_64"
 
 # ssh
 # export SSH_KEY_PATH="~/.ssh/dsa_id"
@@ -111,23 +105,18 @@ eval "$(rbenv init - zsh)"
 # Add RVM to PATH for scripting. Make sure this is the last PATH variable change.
 #export LESSHISTFILE=-
 #export SSH_AUTH_SOCK=${HOME}/.ssh/ssh-agent.sock
-export XDG_CONFIG_HOME=${HOME}/.config
-export XDG_DATA_HOME=${HOME}/.local/share
-export XDG_CACHE_HOME=${HOME}/.local/cache
-export XDG_STATE_HOME=${HOME}/.local/state
-#export AWS_SHARED_CREDENTIALS_FILE=${XDG_CONFIG_HOME}/aws/credentials
-#export AWS_CONFIG_FILE=${XDG_CONFIG_HOME}/aws/config
-export DOCKER_CONFIG=${XDG_CONFIG_HOME}/docker/
-export GTK2_RC_FILES=${XDG_CONFIG_HOME}/gtk-2.0/gtkrc-2.0
-export KIMAI_CONFIG=${XDG_CONFIG_HOME}/kimai2/settings.ini
-export KUBECONFIG=${XDG_CONFIG_HOME}/kube/config
-export WGETRC=${XDG_CONFIG_HOME}/wget/wgetrc
-#export ZDOTDIR=${XDG_CONFIG_HOME}/zsh
-export CARGO_HOME=${HOME}/.local/share/cargo
-#export GNUPGHOME=${HOME}/.local/share/gnupg
-export GOPATH=${HOME}/.local/share/go
-#export HISTFILE=${HOME}/.local/share/bash.history
-export PATH=/usr/bin/sway:${GOPATH}/bin:${HOME}/.rubies/ruby-3.3.0/bin:${HOME}/.local/bin:${PATH}
+#export XDG_CONFIG_HOME=${HOME}/.config
+#export XDG_DATA_HOME=${HOME}/.local/share
+#export XDG_CACHE_HOME=${HOME}/.local/cache
+#export XDG_STATE_HOME=${HOME}/.local/state
+#export DOCKER_CONFIG=${XDG_CONFIG_HOME}/docker/
+#export GTK2_RC_FILES=${XDG_CONFIG_HOME}/gtk-2.0/gtkrc-2.0
+#export KIMAI_CONFIG=${XDG_CONFIG_HOME}/kimai2/settings.ini
+#export KUBECONFIG=${XDG_CONFIG_HOME}/kube/config
+#export WGETRC=${XDG_CONFIG_HOME}/wget/wgetrc
+#export CARGO_HOME=${HOME}/.local/share/cargo
+#export GOPATH=${HOME}/.local/share/go
+#export PATH=/usr/bin/sway:${GOPATH}/bin:${HOME}/.rubies/ruby-3.3.0/bin:${HOME}/.local/bin:${PATH}
 
 export GEM_HOME="$(gem env gempath)"
 export PATH="$PATH:$GEM_HOME/bin"
