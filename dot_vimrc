@@ -65,7 +65,9 @@ Plug 'junegunn/fzf.vim'
 " Auto completion and syntax
 Plug 'jiangmiao/auto-pairs'
 Plug 'dense-analysis/ale'
-Plug 'neoclide/coc.nvim', {'branch': 'release'}
+if executable('node')
+  Plug 'neoclide/coc.nvim', {'branch': 'release'}
+endif
 Plug 'michaeljsmith/vim-indent-object'
 Plug 'kana/vim-textobj-user'
 
