@@ -65,7 +65,7 @@ DISABLE_AUTO_UPDATE="true"
 plugins=(git z zsh-syntax-highlighting zsh-autosuggestions archlinux mvn aws sudo pass battery emoji-clock)
 {{ else }}
 # Minimale Plugin-Auswahl für Server für schnelleren Start
-plugins=(git z sudo)
+plugins=(git z sudo zsh-syntax-highlighting zsh-autosuggestions)
 {{ end }}
 
 source $ZSH/oh-my-zsh.sh
@@ -96,6 +96,7 @@ source $ZSH/oh-my-zsh.sh
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 alias vi='/usr/bin/vim'
+alias ls='lsd'
 
 
 # Nur auf Laptop kubectl-Completion laden
@@ -134,8 +135,6 @@ export PATH="$PATH:$HOME/.rvm/bin"
 export MOZ_ENABLE_WAYLAND=1
 export IDEA_JDK=/opt/intellij-idea-ultimate-edition
 
-# Fancy ls nur auf Laptops
-alias ls='lsd'
 alias sshk="kitty +kitten ssh"
 {{ else }}
 # Server-Aliase
