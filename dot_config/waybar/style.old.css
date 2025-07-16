@@ -1,0 +1,72 @@
+@import "../../.cache/wal/colors-waybar.css";
+
+* {
+  padding: 0 5px;
+  font-size: 16px;
+  font-family: "Terminus (TTF)";
+  color: @foreground;
+}
+
+window#waybar {
+	background-color: rgba(59,50,40, 0.8);
+	color: transparent;
+	transition-property: background-color;
+	transition-duration: .5s;
+}
+
+#battery {
+  margin: 3px 0px 3px 0px;
+  padding: 5px;
+  color: @foreground;
+}
+
+#custom-quit {
+  padding: 5px 7px 5px 5px;
+  border-top-right-radius: 10px;
+  border-bottom-right-radius: 10px;
+  border-right: 2px solid #1d1f21;
+  background: #F00;
+  color: #FFF;
+}
+
+#clock {
+  margin: 3px 0px 3px 3px;
+  padding: 5px;
+  color: @foreground;;
+  border-top-left-radius: 10px;
+  border-bottom-left-radius: 10px;
+}
+
+#custom-media {
+  color: @foreground;
+}
+#pulseaudio {
+  margin: 3px 3px 3px 0px;
+  padding: 5px 7px 5px 5px;
+  border-top-right-radius: 10px;
+  border-bottom-right-radius: 10px;
+  color: @foreground;
+}
+
+#network {
+  background: @background;
+  color: @foreground;
+  margin: 3px 0px 3px 0px;
+  padding: 5px;
+}
+
+#workspaces button {
+    padding: 0 15px;
+    background: transparent;
+    color: @foreground;
+    border-bottom: 3px solid transparent;
+}
+
+#workspaces button.focused {
+    background: #64727D;
+    border-bottom: 3px solid @foreground;
+}
+
+#workspaces button.urgent {
+    background-color: #eb4d4b;
+}

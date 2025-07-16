@@ -1,0 +1,49 @@
+# Gammastep (Redshift) für Blaulichtfilter
+{{ if lookPath "gammastep-indicator" }}
+exec-once = /usr/bin/gammastep-indicator -l ${RS_LAT}:${RS_LON} -m wayland -t ${RS_DAY}:${RS_NIGHT}
+{{ end }}
+
+# Browser
+{{ if lookPath "firefox" }}
+exec-once = firefox
+{{ end }}
+{{ if lookPath "google-chrome-stable" }}
+exec-once = google-chrome-stable
+{{ end }}
+
+# Mail und Kommunikation
+{{ if lookPath "evolution" }}
+exec-once = evolution
+{{ end }}
+{{ if lookPath "telegram-desktop" }}
+exec-once = telegram-desktop
+{{ end }}
+{{ if lookPath "signal-desktop" }}
+exec-once = signal-desktop --password-store=gnome-libsecret --use-tray-icon --enable-features=UseOzonePlatform --ozone-platform=wayland
+{{ end }}
+{{ if lookPath "gajim" }}
+exec-once = gajim
+{{ end }}
+
+# Terminal
+{{ if lookPath "kitty" }}
+exec-once = kitty
+{{ end }}
+
+# Cloud und Sync
+{{ if lookPath "sparkleshare" }}
+exec-once = sparkleshare
+{{ end }}
+{{ if lookPath "nextcloud" }}
+exec-once = nextcloud --background
+{{ end }}
+
+# Audio
+{{ if lookPath "easyeffects" }}
+exec-once = easyeffects --gapplication-service
+{{ end }}
+
+# Waybar (nur wenn der Service existiert)
+{{ if stat (joinPath .chezmoi.homeDir ".config/systemd/user/waybar-hyprland.service") }}
+exec-once = systemctl --user restart waybar-hyprland
+{{ end }}

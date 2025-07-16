@@ -1,0 +1,23 @@
+.vscode/
+
+.oh-my-zsh/cache
+.oh-my-zsh/cache/**
+.oh-my-zsh/**/*.zwc
+
+# Hyprland Config - nur auf Arch Linux Laptops
+{{ if not (and (eq .chezmoi.os "linux") (lookPath "pacman") (.chezmoi.kernel.osrelease | regexMatch ".*arch.*")) }}
+.config/hypr/
+{{ end }}
+
+# Persönliche Bilder und Wallpaper - immer ignorieren
+.config/hypr/images/
+.config/rofi/images/
+
+# Wayland Desktop Konfigurationen - nur auf Arch Linux Laptops
+{{ if not (and (eq .chezmoi.os "linux") (lookPath "pacman") (.chezmoi.kernel.osrelease | regexMatch ".*arch.*")) }}
+.config/hypr/
+.config/waybar/
+.config/rofi/
+.config/systemd/user/waybar*.service
+.config/systemd/user/hypr*.service
+{{ end }}
