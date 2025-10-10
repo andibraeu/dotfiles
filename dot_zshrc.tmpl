@@ -61,8 +61,10 @@ DISABLE_AUTO_UPDATE="true"
 {{ $isLaptop := false }}
 {{ range .tags }}{{ if eq . "laptop" }}{{ $isLaptop = true }}{{ end }}{{ end }}
 
-{{ if $isLaptop }}
-plugins=(git z zsh-syntax-highlighting zsh-autosuggestions archlinux mvn aws sudo pass battery emoji-clock)
+{{ if and (eq .chezmoi.os "linux") ($isLaptop) }}
+plugins=(git z zsh-syntax-highlighting zsh-autosuggestions archlinux mvn aws sudo battery emoji-clock)
+{{ else if and (eq .chezmoi.os "darwin") ($isLaptop) }}
+plugins=(git z zsh-syntax-highlighting zsh-autosuggestions brew macos mvn aws sudo battery emoji-clock)
 {{ else }}
 # Minimale Plugin-Auswahl für Server für schnelleren Start
 plugins=(git z sudo zsh-syntax-highlighting zsh-autosuggestions)
@@ -102,7 +104,7 @@ alias ls='lsd'
 # Nur auf Laptop kubectl-Completion laden
 if [ -f "/usr/bin/kubectl" ]; then source <(kubectl completion zsh); fi
 
-{{ if $isLaptop }}
+{{ if and (eq .chezmoi.os "linux") ($isLaptop) }}
 export PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH"
 # AWS-Completion
 autoload bashcompinit && bashcompinit
@@ -130,15 +132,27 @@ export PATH="$PATH:$HOME/.rvm/bin"
 
 {{ end }}
 
-{{ if $isLaptop }}
+{{ if and (eq .chezmoi.os "darwin") ($isLaptop) }}
+# Homebrew Zsh completions
+fpath=(/opt/homebrew/completions/zsh /opt/homebrew/share/zsh/site-functions $fpath)
+
+# Standard compinit
+autoload -Uz compinit
+compinit
+
+# Optionale Einstellung: schnelleres completion caching
+zstyle ':completion:*' use-cache on
+zstyle ':completion:*' cache-path ~/.zsh/cache
+{{ end }}
+
+{{ if and (eq .chezmoi.os "linux") ($isLaptop) }}
 # GUI-spezifische Umgebungsvariablen
 export MOZ_ENABLE_WAYLAND=1
 export IDEA_JDK=/opt/intellij-idea-ultimate-edition
 
 alias sshk="kitty +kitten ssh"
-{{ else }}
+{{ end }}
 # Server-Aliase
 alias ll='ls -alh'
 alias df='df -h'
 alias free='free -m'
-{{ end }}
