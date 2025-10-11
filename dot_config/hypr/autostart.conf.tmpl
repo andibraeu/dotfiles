@@ -43,6 +43,11 @@ exec-once = nextcloud --background
 exec-once = easyeffects --gapplication-service
 {{ end }}
 
+# Bitwarden
+{{ if lookPath "bitwarden-desktop" }}
+exec-once = bitwarden-desktop --ozone-platform-hint=auto
+{{ end }}
+
 # Waybar (nur wenn der Service existiert)
 {{ if stat (joinPath .chezmoi.homeDir ".config/systemd/user/waybar-hyprland.service") }}
 exec-once = systemctl --user restart waybar-hyprland
