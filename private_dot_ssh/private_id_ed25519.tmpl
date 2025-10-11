@@ -2,5 +2,6 @@
   {{- /* Bitwarden ist installiert, Key aus Bitwarden */ -}}
   {{- $itemName := printf "SSH Key - %s" .chezmoi.hostname -}}
   {{- $item := bitwarden "item" $itemName -}}
-  {{- $item.notes -}}
+  {{ printf "%s\n" $item.notes }}
 {{- end -}}
+
