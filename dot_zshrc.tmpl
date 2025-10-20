@@ -156,3 +156,11 @@ alias sshk="kitty +kitten ssh"
 alias ll='ls -alh'
 alias df='df -h'
 alias free='free -m'
+
+# Lokale Erweiterungen (nicht versioniert)
+ZSH_LOCAL_DIR="$HOME/.zshrc.local.d"
+if [ -d "$ZSH_LOCAL_DIR" ]; then
+  for file in "$ZSH_LOCAL_DIR"/*.zsh(N); do
+    [ -r "$file" ] && source "$file"
+  done
+fi
