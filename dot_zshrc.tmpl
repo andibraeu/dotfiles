@@ -64,7 +64,7 @@ DISABLE_AUTO_UPDATE="true"
 {{ if and (eq .chezmoi.os "linux") ($isLaptop) }}
 plugins=(git z zsh-syntax-highlighting zsh-autosuggestions archlinux mvn aws sudo battery emoji-clock)
 {{ else if and (eq .chezmoi.os "darwin") ($isLaptop) }}
-plugins=(git z zsh-syntax-highlighting zsh-autosuggestions brew macos mvn aws sudo battery emoji-clock)
+plugins=(git z zsh-syntax-highlighting zsh-autosuggestions brew macos mvn aws sudo battery emoji-clock terraform)
 {{ else }}
 # Minimale Plugin-Auswahl für Server für schnelleren Start
 plugins=(git z sudo zsh-syntax-highlighting zsh-autosuggestions)
