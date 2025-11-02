@@ -10,6 +10,7 @@
     font-size: 18px;
     font-family: "UnifontExMono";
     min-height: 25px;
+    color: #d0d0d0;
 }
 
 window#waybar {
