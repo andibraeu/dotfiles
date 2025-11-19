@@ -15,12 +15,15 @@
 .config/hypr/images/
 .config/rofi/images/
 
+{{ if not (lookPath "kitty") }}
+.config/kitty/
+{{ end }}
+
 # Wayland Desktop Konfigurationen - nur auf Arch Linux Laptops
 {{ if not (and (eq .chezmoi.os "linux") (lookPath "pacman") (.chezmoi.kernel.osrelease | regexMatch ".*arch.*")) }}
 .config/hypr/
 .config/waybar/
 .config/rofi/
-.config/kitty/
 .config/mako/
 .config/systemd/user/waybar*.service
 .config/systemd/user/hypr*.service

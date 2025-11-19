@@ -9,7 +9,11 @@ focus_follows_mouse yes
 enable_audio_bell no
 window_alert_on_bell no
 bell_on_tab no
+{{ if eq .chezmoi.os "darwin" }}
+hide_window_decorations no
+{{ else }}
 hide_window_decorations yes
+{{ end }}
 tab_bar_edge bottom
 tab_bar_style powerline
 background_opacity 0.82

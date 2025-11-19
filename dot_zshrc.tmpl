@@ -143,6 +143,11 @@ compinit
 # Optionale Einstellung: schnelleres completion caching
 zstyle ':completion:*' use-cache on
 zstyle ':completion:*' cache-path ~/.zsh/cache
+
+# User-installierte Binaries (z.B. pywal mit pip install --user)
+export PATH="$HOME/.local/bin:$PATH"
+# Python user bin (für pip install --user)
+export PATH="$PATH:$(python3 -m site --user-base)/bin"
 {{ end }}
 
 {{ if and (eq .chezmoi.os "linux") ($isLaptop) }}
