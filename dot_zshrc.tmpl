@@ -1,8 +1,12 @@
 # Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
 # Initialization code that may require console input (password prompts, [y/n]
 # confirmations, etc.) must go above this block; everything else may go below.
-if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
-  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
+# Skip instant prompt in IDE-integrated terminals (Kiro/VSCode) where it breaks
+# shell integration command-end detection.
+if [[ "$TERM_PROGRAM" != "kiro" && "$TERM_PROGRAM" != "vscode" ]]; then
+  if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
+    source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
+  fi
 fi
 
 # If you come from bash you might have to change your $PATH.
@@ -148,13 +152,18 @@ zstyle ':completion:*' cache-path ~/.zsh/cache
 export PATH="$HOME/.local/bin:$PATH"
 # Python user bin (für pip install --user)
 export PATH="$PATH:$(python3 -m site --user-base)/bin"
+export PATH="/opt/homebrew/opt/dotnet@8/bin:$PATH"
+ulimit -n 65536
+[[ "$TERM_PROGRAM" == "kiro" ]] && . "$(kiro --locate-shell-integration-path zsh)"
 {{ end }}
 
 {{ if and (eq .chezmoi.os "linux") ($isLaptop) }}
 # GUI-spezifische Umgebungsvariablen
 export MOZ_ENABLE_WAYLAND=1
 export IDEA_JDK=/opt/intellij-idea-ultimate-edition
+{{ end }}
 
+{{ if ($isLaptop) }}
 alias sshk="kitty +kitten ssh"
 {{ end }}
 # Server-Aliase
