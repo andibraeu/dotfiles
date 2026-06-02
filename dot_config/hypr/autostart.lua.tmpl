@@ -1,0 +1,41 @@
+return function()
+{{ if lookPath "gammastep-indicator" }}
+    hl.exec_cmd("/usr/bin/gammastep-indicator -l ${RS_LAT}:${RS_LON} -m wayland -t ${RS_DAY}:${RS_NIGHT}")
+{{ end }}
+{{ if lookPath "firefox" }}
+    hl.exec_cmd("firefox")
+{{ end }}
+{{ if lookPath "google-chrome-stable" }}
+    hl.exec_cmd("google-chrome-stable")
+{{ end }}
+{{ if lookPath "evolution" }}
+    hl.exec_cmd("evolution")
+{{ end }}
+{{ if lookPath "Telegram" }}
+    hl.exec_cmd("Telegram")
+{{ end }}
+{{ if lookPath "signal-desktop" }}
+    hl.exec_cmd("signal-desktop --password-store=gnome-libsecret --use-tray-icon --enable-features=UseOzonePlatform --ozone-platform=wayland")
+{{ end }}
+{{ if lookPath "gajim" }}
+    hl.exec_cmd("gajim")
+{{ end }}
+{{ if lookPath "kitty" }}
+    hl.exec_cmd("kitty")
+{{ end }}
+{{ if lookPath "sparkleshare" }}
+    hl.exec_cmd("sparkleshare")
+{{ end }}
+{{ if lookPath "nextcloud" }}
+    hl.exec_cmd("nextcloud --background")
+{{ end }}
+{{ if lookPath "easyeffects" }}
+    hl.exec_cmd("easyeffects --gapplication-service")
+{{ end }}
+{{ if lookPath "bitwarden-desktop" }}
+    hl.exec_cmd("bitwarden-desktop --ozone-platform-hint=auto")
+{{ end }}
+{{ if stat (joinPath .chezmoi.homeDir ".config/systemd/user/waybar-hyprland.service") }}
+    hl.exec_cmd("systemctl --user restart waybar-hyprland")
+{{ end }}
+end
