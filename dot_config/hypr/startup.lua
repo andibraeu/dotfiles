@@ -1,6 +1,5 @@
 -- Zentraler Autostart (nur bei Session-Start, nicht bei hyprctl reload)
 hl.on("hyprland.start", function()
-    hl.exec_cmd("hyprpaper")
     hl.exec_cmd("hypridle")
     require("autostart")()
 end)
