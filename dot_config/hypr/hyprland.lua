@@ -118,7 +118,14 @@ hl.window_rule({
     suppress_event = "maximize",
 })
 
-hl.layer_rule({ match = { namespace = "waybar" }, blur = true })
+-- no_anim: Waybar-Tooltips flackern sonst bzw. schließen sich sofort wieder
+-- ignore_alpha: Blur nicht auf die transparenten Lücken der Leiste anwenden
+hl.layer_rule({
+    match = { namespace = "waybar" },
+    blur = true,
+    ignore_alpha = 0.5,
+    no_anim = true,
+})
 
 hl.gesture({ fingers = 3, direction = "horizontal", action = "workspace" })
 

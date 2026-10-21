@@ -1,5 +1,9 @@
 {
-  "layer": "top", "position": "top",
+  "layer": "top",
+  "position": "top",
+  "margin-top": 4,
+  "margin-left": 8,
+  "margin-right": 8,
   "modules-left": ["custom/logo", "clock",  "custom/weather", "disk", "memory", "cpu", "temperature", "custom/powerDraw", "hyprland/window" ],
   "modules-center": [  "ext/workspaces"],
   "modules-right": ["custom/events", "tray",  "custom/clipboard", "backlight", "idle_inhibitor", "custom/colorpicker", "bluetooth", "pulseaudio", "network", "custom/updates",  "battery", "custom/quit"],
@@ -13,6 +17,7 @@
     "format": "{}",
     "tooltip": true,
     "interval": 300,
+    "max-length": 10,
     "format-icons": {
         "default": ""
     },
@@ -80,14 +85,21 @@
 
 
 "clock": {
-      "format": "{:%H:%M:%S}",
-      "interval":1,
-      "tooltip-format": "\n<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>",
-      "calendar-weeks-pos": "right",
-      "today-format": "<span color='#7645AD'><b><u>{}</u></b></span>",
-      "format-calendar": "<span color='#aeaeae'><b>{}</b></span>",
-      "format-calendar-weeks": "<span color='#aeaeae'><b>W{:%V}</b></span>",
-      "format-calendar-weekdays": "<span color='#aeaeae'><b>{}</b></span>"
+      "format": "{:%H:%M}",
+      "interval": 60,
+      "tooltip-format": "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>",
+      "calendar": {
+        "mode": "month",
+        "weeks-pos": "right",
+        "on-scroll": 1,
+        "format": {
+          "months": "<span color='#5fd1fa'><b>{}</b></span>",
+          "days": "<span color='#aeaeae'><b>{}</b></span>",
+          "weeks": "<span color='#aeaeae'><b>W{}</b></span>",
+          "weekdays": "<span color='#aeaeae'><b>{}</b></span>",
+          "today": "<span color='#7645AD'><b><u>{}</u></b></span>"
+        }
+      }
       },
 
   "bluetooth": {

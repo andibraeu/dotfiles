@@ -9,14 +9,31 @@
     border: none;
     font-size: 18px;
     font-family: "UnifontExMono";
-    min-height: 25px;
     color: #d0d0d0;
 }
 
 window#waybar {
   background: transparent;
-  margin: 5px;
- }
+}
+
+.modules-left,
+.modules-center,
+.modules-right {
+  min-height: 25px;
+}
+
+tooltip {
+  background: #000000;
+  border: 1px solid #5fd1fa;
+  border-radius: 10px;
+  font-size: 13px;
+}
+
+tooltip label {
+  font-size: 13px;
+  padding: 4px 8px;
+  color: #d0d0d0;
+}
 
 #custom-logo {
   padding: 0 10px;

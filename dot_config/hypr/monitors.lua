@@ -1,15 +1,39 @@
 local mainMod = "SUPER"
 
--- Interner Laptop-Bildschirm (links)
+-- Interner Laptop-Bildschirm, Ursprung der Anordnung
 local laptop = "eDP-1"
--- Ultrawide – unabhängig vom Anschluss (am Dock oft DP-3, sonst HDMI-A-2)
+-- Beide externen Monitore teilen sich einen USB-C-Port.
+-- Der andere Port bleibt für den Magnetadapter zum Laden frei.
+-- Zugeordnet wird über das Modell, der Anschlussname (DP-1, DP-3, …) spielt keine Rolle.
+-- Bisheriger Ultrawide, rechts vom Laptop.
 local dell = "desc:Dell Inc. DELL U3419W 6R576T2"
+-- Zweiter Arbeitsplatz: Philips links vom Laptop.
+local philips = "desc:Philips Consumer Electronics Company 34B2U3600CH UK02527039126"
+
+local laptopPos = "0x0"
+-- Bestehende Position des Dell, unverändert rechts vom Laptop.
+local rightPos = "1560x200"
+-- 3440×1440 bei Skalierung 1.25 → 2752 logische Pixel, bündig links vom Laptop.
+-- Vertikal wie der Dell (y=200), beide Ultrawides sind gleich groß.
+local leftPos = "-2752x200"
 
 local lastExternalName = nil
 
+local function descriptionOf(selector)
+    return (selector:gsub("^desc:", ""))
+end
+
+local function isMonitor(mon, selector)
+    if not mon or not selector then
+        return false
+    end
+    return mon.name == selector or mon.description == selector or mon.description == descriptionOf(selector)
+end
+
 hl.monitor({ output = "", mode = "preferred", position = "auto", scale = 1.25 })
-hl.monitor({ output = dell, mode = "preferred", position = "1560x200", scale = 1.25 })
-hl.monitor({ output = laptop, mode = "preferred", position = "0x0", scale = 1.25 })
+hl.monitor({ output = dell, mode = "preferred", position = rightPos, scale = 1.25 })
+hl.monitor({ output = philips, mode = "preferred", position = leftPos, scale = 1.25 })
+hl.monitor({ output = laptop, mode = "preferred", position = laptopPos, scale = 1.25 })
 
 -- Workspaces 1–10 gehören auf den Dell, sobald er da ist.
 -- Hyprland legt auf dem Laptop automatisch einen leeren Extra-Workspace an.
@@ -133,24 +157,34 @@ local function applyExtended()
     hl.monitor({
         output   = laptop,
         mode     = "preferred",
-        position = "0x0",
+        position = laptopPos,
         scale    = 1.25,
         mirror   = "none",
     })
     hl.monitor({
-        output   = ext.name,
+        output   = philips,
         mode     = "preferred",
-        position = "1560x200",
+        position = leftPos,
         scale    = 1.25,
         mirror   = "none",
     })
     hl.monitor({
         output   = dell,
         mode     = "preferred",
-        position = "1560x200",
+        position = rightPos,
         scale    = 1.25,
         mirror   = "none",
     })
+    -- Weitere Monitore am selben USB-C, z. B. über das Dock, bleiben rechts.
+    if not isMonitor(ext, philips) and not isMonitor(ext, dell) then
+        hl.monitor({
+            output   = ext.name,
+            mode     = "preferred",
+            position = rightPos,
+            scale    = 1.25,
+            mirror   = "none",
+        })
+    end
 end
 
 local function applyMirror()
@@ -161,7 +195,7 @@ local function applyMirror()
     hl.monitor({
         output   = laptop,
         mode     = "preferred",
-        position = "0x0",
+        position = laptopPos,
         scale    = 1.25,
         mirror   = "none",
     })
