@@ -1,0 +1,7 @@
+[Unit]
+Description=Zufälliges Lockscreen-Bild für hyprlock und SDDM wählen
+ConditionPathIsDirectory=%h/.config/hypr/images/lockscreen
+
+[Service]
+Type=oneshot
+ExecStart=/bin/sh -c 'f=$$(find %h/.config/hypr/images/lockscreen -type f | shuf -n 1) && [ -n "$$f" ] && ln -sf "$$f" %h/.config/hypr/images/lockscreen/lockscreen'

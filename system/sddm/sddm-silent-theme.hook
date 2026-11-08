@@ -1,0 +1,15 @@
+# Verwaltet von chezmoi (system/sddm/) – installiert nach /etc/pacman.d/hooks/
+# Ein Update von SilentSDDM überschreibt metadata.desktop und damit die Wahl
+# der Konfiguration. Dieser Hook setzt sie danach wieder auf configs/andi.conf.
+
+[Trigger]
+Operation = Install
+Operation = Upgrade
+Type = Package
+Target = sddm-silent-theme
+Target = sddm-silent-theme-git
+
+[Action]
+Description = SilentSDDM: configs/andi.conf wieder aktivieren
+When = PostTransaction
+Exec = /usr/bin/sed -i s|^ConfigFile=.*|ConfigFile=configs/andi.conf| /usr/share/sddm/themes/silent/metadata.desktop

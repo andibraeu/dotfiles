@@ -1,0 +1,44 @@
+{{- if and (eq .chezmoi.os "linux") .isLaptop -}}
+#!/usr/bin/env bash
+# Installiert die SDDM-Konfiguration (SilentSDDM) aus system/sddm/ ins System.
+# Nur auf Linux-Notebooks (isLaptop in ~/.config/chezmoi/chezmoi.toml).
+# Läuft nur, wenn sich eine der Dateien ändert:
+#   silent.conf             {{ include "system/sddm/silent.conf" | sha256sum }}
+#   andi.conf               {{ include "system/sddm/andi.conf" | sha256sum }}
+#   sddm-silent-theme.hook  {{ include "system/sddm/sddm-silent-theme.hook" | sha256sum }}
+set -euo pipefail
+
+SRC={{ joinPath .chezmoi.sourceDir "system/sddm" | quote }}
+HOME_DIR={{ .chezmoi.homeDir | quote }}
+THEME=/usr/share/sddm/themes/silent
+
+if ! command -v sddm >/dev/null 2>&1 || [ ! -d "$THEME" ]; then
+    echo "chezmoi/sddm: SDDM oder SilentSDDM fehlt – übersprungen."
+    echo "              Installation: yay -S sddm-silent-theme"
+    exit 0
+fi
+
+echo "chezmoi/sddm: installiere SDDM-Konfiguration (sudo)…"
+
+# Greeter-Konfiguration und eigenes Theme-Preset
+sudo install -Dm644 "$SRC/silent.conf" /etc/sddm.conf.d/silent.conf
+sudo install -Dm644 "$SRC/andi.conf"   "$THEME/configs/andi.conf"
+
+# pacman-Hook: setzt ConfigFile nach Theme-Updates wieder
+sudo install -Dm644 "$SRC/sddm-silent-theme.hook" /etc/pacman.d/hooks/sddm-silent-theme.hook
+
+# Preset aktivieren
+if grep -q '^ConfigFile=' "$THEME/metadata.desktop"; then
+    sudo sed -i 's|^ConfigFile=.*|ConfigFile=configs/andi.conf|' "$THEME/metadata.desktop"
+else
+    echo 'ConfigFile=configs/andi.conf' | sudo tee -a "$THEME/metadata.desktop" >/dev/null
+fi
+
+# Hintergrund = aktuelles hyprlock-Bild (Symlink, rotiert per lockscreen-rotate.timer)
+sudo ln -sfn "$HOME_DIR/.config/hypr/images/lockscreen/lockscreen" "$THEME/backgrounds/hyprlock.jpg"
+
+# sddm darf das Home durchqueren (nicht auflisten), um Bild/Avatar zu lesen
+setfacl -m u:sddm:x "$HOME_DIR"
+
+echo "chezmoi/sddm: fertig. Test: cd $THEME && ./test.sh"
+{{ end -}}

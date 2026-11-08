@@ -1,0 +1,9 @@
+[Unit]
+Description=Lockscreen-Bild alle 10 Minuten wechseln
+
+[Timer]
+OnStartupSec=5s
+OnUnitActiveSec=10min
+
+[Install]
+WantedBy=timers.target
