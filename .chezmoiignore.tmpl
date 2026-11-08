@@ -11,6 +11,17 @@
 .config/hypr/
 {{ end }}
 
+# Systemdateien (z.B. SDDM) - werden per .chezmoiscripts installiert, nie ins Home
+system/
+system/**
+
+# Lockscreen-Rotation (hyprlock + SDDM) - nur auf Linux-Notebooks
+{{ if not (and (eq .chezmoi.os "linux") .isLaptop) }}
+.config/systemd/user/lockscreen-rotate.service
+.config/systemd/user/lockscreen-rotate.timer
+.config/systemd/user/timers.target.wants/lockscreen-rotate.timer
+{{ end }}
+
 # Persönliche Bilder und Wallpaper - immer ignorieren
 .config/hypr/images/
 .config/rofi/images/

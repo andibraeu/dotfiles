@@ -35,30 +35,85 @@ hl.monitor({ output = dell, mode = "preferred", position = rightPos, scale = 1.2
 hl.monitor({ output = philips, mode = "preferred", position = leftPos, scale = 1.25 })
 hl.monitor({ output = laptop, mode = "preferred", position = laptopPos, scale = 1.25 })
 
--- Workspaces 1–10 gehören auf den Dell, sobald er da ist.
--- Hyprland legt auf dem Laptop automatisch einen leeren Extra-Workspace an.
-for i = 1, 10 do
+-- Workspace 1 gehört dem Laptop, 2–10 dem angeschlossenen externen Monitor.
+-- Die Regeln zeigen immer auf den gerade angeschlossenen externen Monitor.
+-- Zeigen sie auf einen fehlenden Monitor, legt Hyprland die persistenten
+-- Workspaces 2–6 auf dem Laptop an und holt sie bei jedem Reload/Monitorwechsel
+-- dorthin zurück.
+-- Hinweis: Regeln mit gleichem Workspace-Selektor werden zusammengeführt;
+-- ein erneuter hl.workspace_rule-Aufruf überschreibt also den Monitor.
+-- Reihenfolge = Priorität, falls mehrere gleichzeitig angeschlossen sind.
+local externals = { dell, philips }
+local ruleMonitor = nil
+
+local function shellQuote(s)
+    return "'" .. tostring(s):gsub("'", "'\\''") .. "'"
+end
+
+local function notify(msg, urgency)
+    hl.exec_cmd("notify-send -u " .. (urgency or "normal") .. " Hyprland " .. shellQuote(msg))
+end
+
+-- Fehler in Callbacks als bleibende Benachrichtigung zeigen, statt nur kurz im Overlay.
+local function safe(name, fn)
+    return function(...)
+        local ok, err = pcall(fn, ...)
+        if not ok then
+            notify("monitors.lua (" .. name .. "): " .. tostring(err), "critical")
+        end
+    end
+end
+
+-- Beim Abstecken können noch Handles auf den gerade entfernten Monitor
+-- auftauchen; deren Felder sind dann evtl. nicht mehr lesbar.
+local function monitorName(mon)
+    if not mon then
+        return nil
+    end
+    local ok, name = pcall(function() return mon.name end)
+    return ok and name or nil
+end
+
+-- Ohne externen Monitor bleibt der Dell eingetragen, damit 2–6 weiterhin
+-- persistent auf dem Laptop existieren.
+local function primaryExternal()
+    for _, selector in ipairs(externals) do
+        if monitorName(hl.get_monitor(selector)) then
+            return selector
+        end
+    end
+    return dell
+end
+
+local function updateWorkspaceRules()
+    local primary = primaryExternal()
+    if primary == ruleMonitor then
+        return
+    end
+    ruleMonitor = primary
     hl.workspace_rule({
-        workspace  = tostring(i),
-        monitor    = dell,
-        default    = (i == 1),
-        -- 2–6 immer anlegen, analog zu waybar persistent-workspaces
-        persistent = (i >= 2 and i <= 6),
+        workspace = "1",
+        monitor   = laptop,
+        default   = true,
     })
+    for i = 2, 10 do
+        hl.workspace_rule({
+            workspace  = tostring(i),
+            monitor    = primary,
+            default    = (i == 2),
+            -- 2–6 immer anlegen, analog zu waybar persistent-workspaces
+            persistent = (i >= 2 and i <= 6),
+        })
+    end
+    hl.config({ cursor = { default_monitor = primary } })
 end
 
 hl.config({
     xwayland = {
         force_zero_scaling = true,
     },
-    cursor = {
-        default_monitor = dell,
-    },
 })
-
-local function notify(msg)
-    hl.exec_cmd('notify-send "Hyprland" "' .. msg .. '"')
-end
+updateWorkspaceRules()
 
 local function remember(mon)
     if mon and mon.name then
@@ -104,12 +159,14 @@ local function getExternal()
 end
 
 local function moveWorkspacesToExternal()
+    updateWorkspaceRules()
     if isMirroring() then
         return
     end
 
     local ext = getExternal()
-    if not ext then
+    local extName = monitorName(ext)
+    if not extName or extName == laptop then
         return
     end
 
@@ -117,36 +174,43 @@ local function moveWorkspacesToExternal()
     local activeId = active and active.id or nil
 
     for _, ws in ipairs(hl.get_workspaces() or {}) do
-        if not ws.special and ws.id >= 1 and ws.id <= 10 then
-            local mon = ws.monitor
-            if not mon or mon.name ~= ext.name then
+        -- Spezial-Workspaces haben negative IDs und fallen hier heraus.
+        local id = ws.id
+        if type(id) == "number" and id >= 1 and id <= 10 then
+            local target = (id == 1) and laptop or extName
+            if monitorName(ws.monitor) ~= target then
                 hl.dispatch(hl.dsp.workspace.move({
-                    workspace = ws.id,
-                    monitor   = ext.name,
+                    workspace = id,
+                    monitor   = target,
                 }))
             end
         end
     end
 
-    if activeId and activeId >= 1 and activeId <= 10 then
+    if type(activeId) == "number" and activeId >= 1 and activeId <= 10 then
         hl.dispatch(hl.dsp.focus({ workspace = activeId }))
     end
 end
 
 -- monitor.added hat nur ~50ms Callback-Timeout; kurz warten, bis der Output steht.
 local function scheduleMove()
-    hl.timer(moveWorkspacesToExternal, { timeout = 250, type = "oneshot" })
+    hl.timer(safe("move", moveWorkspacesToExternal), { timeout = 250, type = "oneshot" })
 end
 
-hl.on("monitor.added", function(mon)
-    if not mon or mon.name == laptop then
+hl.on("monitor.added", safe("monitor.added", function(mon)
+    local name = monitorName(mon)
+    if not name or name == laptop then
         return
     end
     scheduleMove()
-end)
+end))
 
-hl.on("hyprland.start", scheduleMove)
-hl.on("config.reloaded", scheduleMove)
+hl.on("monitor.removed", safe("monitor.removed", function()
+    hl.timer(safe("rules", updateWorkspaceRules), { timeout = 250, type = "oneshot" })
+end))
+
+hl.on("hyprland.start", safe("start", scheduleMove))
+hl.on("config.reloaded", safe("reload", scheduleMove))
 
 local function applyExtended()
     local ext = getExternal()
@@ -224,6 +288,6 @@ local function toggleMirror()
     end
 end
 
-hl.bind(mainMod .. " + SHIFT + M", toggleMirror)
+hl.bind(mainMod .. " + SHIFT + M", safe("mirror", toggleMirror))
 
 hl.env("GDK_SCALE", "1.25")
