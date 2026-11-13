@@ -1,3 +1,10 @@
+# Kiro CLI pre block. Keep at the top of this file.
+# Skip inside IDE-integrated terminals (Kiro/VSCode): the IDE provides its own
+# shell integration, and loading kiro-cli on top corrupts command-end markers.
+if [[ -z "$KIRO_SHELL_INTEGRATION" && "$TERM_PROGRAM" != "kiro" && "$TERM_PROGRAM" != "vscode" ]]; then
+  [[ -f "${HOME}/Library/Application Support/kiro-cli/shell/zshrc.pre.zsh" ]] && builtin source "${HOME}/Library/Application Support/kiro-cli/shell/zshrc.pre.zsh"
+fi
+
 # Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
 # Initialization code that may require console input (password prompts, [y/n]
 # confirmations, etc.) must go above this block; everything else may go below.
@@ -16,7 +23,12 @@ export ZSH=~/.oh-my-zsh
 # Set name of the theme to load. Optionally, if you set this to "random"
 # it'll load a random theme each time that oh-my-zsh is loaded.
 # See https://github.com/robbyrussell/oh-my-zsh/wiki/Themes
-ZSH_THEME="powerlevel10k/powerlevel10k"
+# In ~/.zshrc — p10k nur in "normalen" Terminals laden
+if [[ "$TERM_PROGRAM" != "kiro" && "$TERM_PROGRAM" != "vscode" ]]; then
+  ZSH_THEME="powerlevel10k/powerlevel10k"
+else
+  ZSH_THEME="robbyrussell"
+fi
 
 export HOSTNAME=$(hostname)
 export VISUAL="vim" 
@@ -68,10 +80,10 @@ DISABLE_AUTO_UPDATE="true"
 {{ if and (eq .chezmoi.os "linux") ($isLaptop) }}
 plugins=(git z zsh-syntax-highlighting zsh-autosuggestions archlinux mvn aws sudo battery emoji-clock)
 {{ else if and (eq .chezmoi.os "darwin") ($isLaptop) }}
-plugins=(git z zsh-syntax-highlighting zsh-autosuggestions brew macos mvn aws sudo battery emoji-clock terraform)
+plugins=(git z zsh-syntax-highlighting zsh-autosuggestions brew macos mvn aws sudo battery emoji-clock terraform opentofu)
 {{ else }}
 # Minimale Plugin-Auswahl für Server für schnelleren Start
-plugins=(git z sudo zsh-syntax-highlighting zsh-autosuggestions)
+plugins=(git z sudo direnv zsh-syntax-highlighting zsh-autosuggestions)
 {{ end }}
 
 source $ZSH/oh-my-zsh.sh
@@ -123,7 +135,11 @@ autoload -Uz compinit && compinit
 compinit
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
-[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
+# Skip p10k config inside IDE terminals (Kiro/VSCode) — its prompt hooks break
+# the IDE shell integration that captures command output.
+if [[ "$TERM_PROGRAM" != "kiro" && "$TERM_PROGRAM" != "vscode" ]]; then
+  [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
+fi
 
 {{ if and (eq .chezmoi.os "linux") ($isLaptop) }}
 # Ruby-Umgebung (rbenv) 
@@ -152,9 +168,20 @@ zstyle ':completion:*' cache-path ~/.zsh/cache
 export PATH="$HOME/.local/bin:$PATH"
 # Python user bin (für pip install --user)
 export PATH="$PATH:$(python3 -m site --user-base)/bin"
-export PATH="/opt/homebrew/opt/dotnet@8/bin:$PATH"
+# export PATH="/opt/homebrew/opt/dotnet@8/bin:$PATH"
+export PATH="/usr/local/share/dotnet:$PATH"
 ulimit -n 65536
+alias python="python3"
 [[ "$TERM_PROGRAM" == "kiro" ]] && . "$(kiro --locate-shell-integration-path zsh)"
+
+# Use "terraform" or tofu depending on .tofu file in directory
+terraform() {
+    if [[ -f .tofu ]]; then
+        /opt/homebrew/bin/tofu "$@"  # adjust path: $(which tofu)
+    else
+        command terraform "$@"
+    fi
+}
 {{ end }}
 
 {{ if and (eq .chezmoi.os "linux") ($isLaptop) }}
@@ -177,4 +204,18 @@ if [ -d "$ZSH_LOCAL_DIR" ]; then
   for file in "$ZSH_LOCAL_DIR"/*.zsh(N); do
     [ -r "$file" ] && source "$file"
   done
+fi
+
+# Clear the right-prompt inside IDE terminals (Kiro/VSCode). An RPROMPT that runs
+# a command substitution (e.g. $(aws_prompt_info)) corrupts the OSC command-end
+# markers the IDE relies on to capture command output. Must run after anything
+# that sets RPROMPT (themes, oh-my-zsh plugins, .zshrc.local.d snippets).
+if [[ "$TERM_PROGRAM" == "kiro" || "$TERM_PROGRAM" == "vscode" ]]; then
+  RPROMPT=''
+fi
+
+# Kiro CLI post block. Keep at the bottom of this file.
+# Skip inside IDE-integrated terminals (Kiro/VSCode) — see note in the pre block.
+if [[ -z "$KIRO_SHELL_INTEGRATION" && "$TERM_PROGRAM" != "kiro" && "$TERM_PROGRAM" != "vscode" ]]; then
+  [[ -f "${HOME}/Library/Application Support/kiro-cli/shell/zshrc.post.zsh" ]] && builtin source "${HOME}/Library/Application Support/kiro-cli/shell/zshrc.post.zsh"
 fi
